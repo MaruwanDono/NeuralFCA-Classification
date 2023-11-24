@@ -1,12 +1,22 @@
 #Marwan Bouabidi
-#HSE Data Science master, year 1
+#HSE Data Science M1
+#Core libs
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams['figure.facecolor'] = (1,1,1,1)
+#Standard ML methods
 from sklearn.model_selection import KFold
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, f1_score
+#Neural FCA dependencies
+from fcapy.context import FormalContext
+from fcapy.lattice import ConceptLattice
+from fcapy.visualizer import LineVizNx
+import neural_lib as nl
 
 #Data
 datasets = ['ds_salaries', 'world_population', 'US_electricity_2017']
@@ -18,10 +28,8 @@ world_population_features = ['Country/Territory', 'Rank', 'Continent',\
 US_electricity_features = ['Utility.Number', 'Utility.Type',\
     'Demand.Summer Peak', 'Sources.Total', 'Uses.Total',\
     'Retail.Total.Customers']
-features = [ds_salaries_features, world_population_features,
-    US_electricity_features]
-targets = [ds_salaries_features[2], world_population_features[3],
-    US_electricity_features[2]]
+features = [ds_salaries_features, world_population_features, US_electricity_features]
+targets = [ds_salaries_features[2], world_population_features[3], US_electricity_features[2]]
 
 
 def readData(dataset_name, features):
@@ -129,12 +137,35 @@ def ClassificationAlgorithms(features, processed_df, target):
             scores_B = f1_scores[key]
             print(r'Average F1 score for {}: {}'.format(key, round(sum(scores_B)/len(scores_B), 3)))
     except Exception as e:
-        print(r'Unable to classify data with decision trees: {}'.format(str(e)))
+        print(r'Unable to classify data with classic ML methods: {}'.format(str(e)))
 
 
-#Method 2: Random forests
-#Method 3: k-NN
-#Method 4: Naive Bayes
+def NeuralFCAClassification(features, processed_df, target):
+    try:
+        print('Neural FCA classification...')
+        X = processed_df.drop(target, axis=1)
+        #OneHotEncode the target column
+        Y = NumOneHotEncoder(processed_df[target], 6, target)
+        print(X)
+        print(Y)
+        accuracy_scores = []
+        f1_scores = []
+        kf = KFold(n_splits=5, shuffle=False, random_state=None)
+        index = 1
+        for train_index, test_index in kf.split(X):
+            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+            Y_train, Y_test = Y.iloc[train_index], Y.iloc[test_index]
+            try:
+                print('Neural FCA algorithm: KFold {}'.format(index))
+                #accuracy_scores.append()
+                #f1_scores.append()
+            except Exception as e:
+                print(r'Unable to execute Neural FCA algorithm: {}'.format(str(e)))
+            index += 1
+        #Print average accuracy and f1
+    except Exception as e:
+        print(r'Unable to classify data with Neural FCA: {}'.format(str(e)))
+
 
 
 
@@ -143,5 +174,6 @@ if __name__=="__main__":
         processed_df = readData(datasets[i], features[i])
         dataset_features = features[i]
         print('')
-        print(r'Classifying {} data...'.format(datasets[i]))
-        ClassificationAlgorithms(dataset_features, processed_df, targets[i])
+        print(r'Treating {} data...'.format(datasets[i]))
+        #ClassificationAlgorithms(dataset_features, processed_df, targets[i])
+        NeuralFCAClassification(dataset_features, processed_df, targets[i])
