@@ -35,11 +35,9 @@ def NeuralFCA_Algorithm(X_train, Y_train, X_test, Y_test):
     for c in L:
         y_preds = np.zeros(K_train.n_objects)
         y_preds[list(c.extent_i)] = 1
-        #Target one hot encoded, we average f1 score
         c.measures['f1_score'] = f1_score(Y_train, y_preds, average='micro', zero_division=1)
     best_concepts = list(L.measures['f1_score'].argsort()[::-1][:7])
     #print(len({g_i for c in L[best_concepts] for g_i in c.extent_i}))
-    #print(K_train.n_objects)
     #assert len({g_i for c in L[best_concepts] for g_i in c.extent_i})==K_train.n_objects, "Selected concepts do not cover all train objects"
     cn = nl.ConceptNetwork.from_lattice(L, best_concepts, sorted(set(Y_train)))
     #vis = LineVizNx(node_label_font_size=14, node_label_func=lambda el_i, P: nl.neuron_label_func(el_i, P, set(cn.attributes))+'\n\n')
@@ -60,7 +58,6 @@ def NeuralFCA_Algorithm(X_train, Y_train, X_test, Y_test):
     #plt.subplots_adjust()
     #plt.tight_layout()
     #plt.show()
-
     cn.fit(X_train, Y_train)
     return cn
 
@@ -84,8 +81,8 @@ def NeuralFCAClassification(features, processed_df, target):
         X.set_index([pd.Index(['object_'+str(i) for i in range(len(X))])], inplace=True)
         Y.set_index([pd.Index(['object_'+str(i) for i in range(len(Y))])], inplace=True)
         #Reduce object number
-        #X = X.iloc[:]
-        #Y = Y.iloc[:]
+        #X = X.iloc[:50]
+        #Y = Y.iloc[:50]
         accuracy_scores = []
         f1_scores = []
         kf = KFold(n_splits=5, shuffle=False, random_state=None)

@@ -1,2 +1,2 @@
-# StandardMLClassificationTechniques
-Classifying some data from kagle with Python, using a few of the most popular ML classification methods: decision trees, random forests, kNN, and XGBoost.
+#Classification Techniques for binary targets
+Classifying some data from kagle with Python, using some of the most popular ML classification methods (decision trees, random forests, kNN, and XGBoost), and the Neural FCA model.
