@@ -1,10 +1,4 @@
-#Marwan Bouabidi
-#HSE Data Science M1
-#Core libs
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-plt.rcParams['figure.facecolor'] = (1,1,1,1)
 #Standard ML methods
 from sklearn.model_selection import KFold
 from sklearn.tree import DecisionTreeClassifier
@@ -12,47 +6,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score, f1_score
-#Neural FCA dependencies
-from fcapy.context import FormalContext
-from fcapy.lattice import ConceptLattice
-from fcapy.visualizer import LineVizNx
-import neural_lib as nl
-
-#Data
-datasets = ['ds_salaries', 'world_population', 'US_electricity_2017']
-ds_salaries_features = ['job_title', 'experience_level', 'salary_in_usd',\
-    'work_year', 'employment_type', 'remote_ratio', 'company_size']
-world_population_features = ['Country/Territory', 'Rank', 'Continent',\
-    'Growth Rate', '2022 Population', '2020 Population', '2015 Population',\
-    '2010 Population', '2000 Population', 'Area (km²)','Density (per km²)']
-US_electricity_features = ['Utility.Number', 'Utility.Type',\
-    'Demand.Summer Peak', 'Sources.Total', 'Uses.Total',\
-    'Retail.Total.Customers']
-features = [ds_salaries_features, world_population_features, US_electricity_features]
-targets = [ds_salaries_features[2], world_population_features[3], US_electricity_features[2]]
-
-
-def readData(dataset_name, features):
-    try:
-        dataPath = r'datasets/{}.csv'.format(dataset_name)
-        df = pd.read_csv(dataPath)
-        processed_df = pd.DataFrame()
-        for feature in features:
-            #Detect if there are strings in the feature's column
-            non_numeric_columns = df.select_dtypes(exclude=['number']).columns.tolist()
-            if(feature in non_numeric_columns):
-                #Check if binarization is possible, by checking category number
-                binarized_df_column = pd.get_dummies(df[feature])
-                bin_categories = binarized_df_column.columns.tolist()
-                if(len(bin_categories) <= 10):
-                    #Add to processed_df
-                    processed_df = pd.concat([processed_df, binarized_df_column], axis=1)
-            else:
-                processed_df = pd.concat([processed_df, df[feature]], axis=1)
-        return processed_df
-    except Exception as e:
-        print(r'Unable to read data: {}'.format(str(e)))
-        return pd.DataFrame()
 
 
 def NumOneHotEncoder(df_target, n, target):
@@ -138,42 +91,3 @@ def ClassificationAlgorithms(features, processed_df, target):
             print(r'Average F1 score for {}: {}'.format(key, round(sum(scores_B)/len(scores_B), 3)))
     except Exception as e:
         print(r'Unable to classify data with classic ML methods: {}'.format(str(e)))
-
-
-def NeuralFCAClassification(features, processed_df, target):
-    try:
-        print('Neural FCA classification...')
-        X = processed_df.drop(target, axis=1)
-        #OneHotEncode the target column
-        Y = NumOneHotEncoder(processed_df[target], 6, target)
-        print(X)
-        print(Y)
-        accuracy_scores = []
-        f1_scores = []
-        kf = KFold(n_splits=5, shuffle=False, random_state=None)
-        index = 1
-        for train_index, test_index in kf.split(X):
-            X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-            Y_train, Y_test = Y.iloc[train_index], Y.iloc[test_index]
-            try:
-                print('Neural FCA algorithm: KFold {}'.format(index))
-                #accuracy_scores.append()
-                #f1_scores.append()
-            except Exception as e:
-                print(r'Unable to execute Neural FCA algorithm: {}'.format(str(e)))
-            index += 1
-        #Print average accuracy and f1
-    except Exception as e:
-        print(r'Unable to classify data with Neural FCA: {}'.format(str(e)))
-
-
-
-
-if __name__=="__main__":
-    for i in range(len(datasets)):
-        processed_df = readData(datasets[i], features[i])
-        dataset_features = features[i]
-        print('')
-        print(r'Treating {} data...'.format(datasets[i]))
-        #ClassificationAlgorithms(dataset_features, processed_df, targets[i])
-        NeuralFCAClassification(dataset_features, processed_df, targets[i])
