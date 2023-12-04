@@ -15,7 +15,7 @@ from sklearn.model_selection import KFold
 #Binarization
 from MLClassification import NumOneHotEncoder
 
-
+#To binarise a DataFrame
 def OneHotEncodeDF(df,n):
     bin_df = pd.DataFrame()
     columns = df.columns.tolist()
@@ -29,24 +29,23 @@ def OneHotEncodeDF(df,n):
 
 def NeuralFCA_Algorithm(X_train, Y_train, X_test, Y_test):
     K_train = FormalContext.from_pandas(X_train)
-    #print(K_train)
     L = ConceptLattice.from_context(K_train, algo='Sofia', is_monotone=True)
-    #print('Concept lattice done. Length: ',len(L))
     for c in L:
         y_preds = np.zeros(K_train.n_objects)
         y_preds[list(c.extent_i)] = 1
         c.measures['f1_score'] = f1_score(Y_train, y_preds, average='micro', zero_division=1)
-    best_concepts = list(L.measures['f1_score'].argsort()[::-1][:7])
-    #print(len({g_i for c in L[best_concepts] for g_i in c.extent_i}))
-    #assert len({g_i for c in L[best_concepts] for g_i in c.extent_i})==K_train.n_objects, "Selected concepts do not cover all train objects"
+    best_concepts = list(L.measures['f1_score'].argsort()[::-1][:212])
+    assert len({g_i for c in L[best_concepts] for g_i in c.extent_i})==K_train.n_objects, "Selected concepts do not cover all train objects"
     cn = nl.ConceptNetwork.from_lattice(L, best_concepts, sorted(set(Y_train)))
+
     #vis = LineVizNx(node_label_font_size=14, node_label_func=lambda el_i, P: nl.neuron_label_func(el_i, P, set(cn.attributes))+'\n\n')
     #vis.init_mover_per_poset(cn.poset)
     #mvr = vis.mover
-    #descr = {''}
+    #descr = {'experience_level_SE','company_size_L','employment_type_FT'}
     #traced = cn.trace_description(descr, include_targets=False)
     #fig, ax = plt.subplots(figsize=(15,5))
 
+    #vis_attrs = ['att_'+str(i) for i in range(len(cn.attributes))]
     #vis.draw_poset(
     #    cn.poset, ax=ax,
     #    flg_node_indices=False,
@@ -58,6 +57,7 @@ def NeuralFCA_Algorithm(X_train, Y_train, X_test, Y_test):
     #plt.subplots_adjust()
     #plt.tight_layout()
     #plt.show()
+
     cn.fit(X_train, Y_train)
     return cn
 
@@ -69,9 +69,8 @@ def NeuralFCAClassification(features, processed_df, target):
         print('Neural FCA classification for:')
         print(processed_df.head())
         #Binarize df
-        #bin_df = OneHotEncodeDF(bin_df,6)
         X = processed_df.drop(target, axis=1)
-        #OneHotEncode Data
+        #Binarise data
         X = OneHotEncodeDF(X,6)
         Y = NumOneHotEncoder(processed_df[target], 6, target)
         #Covert to bool dataframes
@@ -86,13 +85,11 @@ def NeuralFCAClassification(features, processed_df, target):
         accuracy_scores = []
         f1_scores = []
         kf = KFold(n_splits=5, shuffle=False, random_state=None)
+        #KFold index
         index = 1
-        #train_index, test_index = list(kf.split(X))[0]
         for train_index, test_index in kf.split(X):
             X_train, X_test = X.iloc[train_index], X.iloc[test_index]
             Y_train, Y_test = Y.iloc[train_index], Y.iloc[test_index]
-            #NeuralFCA_Algorithm(X_train, Y_train, X_test, Y_test)
-            #if True:
             try:
                 print('Neural FCA algorithm: KFold {}...'.format(index))
                 #Execute for all binary columns of the OneHotEncoded numerical target attribute
