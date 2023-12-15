@@ -8,12 +8,15 @@ from fcapy.context import FormalContext
 from fcapy.lattice import ConceptLattice
 from fcapy.visualizer import LineVizNx
 import neural_lib as nl
+import networkx as nx
 #Scoring
 from sklearn.metrics import accuracy_score, f1_score
 #KFold
 from sklearn.model_selection import KFold
 #Binarization
 from MLClassification import NumOneHotEncoder
+
+
 
 #To binarise a DataFrame
 def OneHotEncodeDF(df,n):
@@ -25,6 +28,8 @@ def OneHotEncodeDF(df,n):
         else:
             bin_df = pd.concat([bin_df, df[column]], axis=1)
     return bin_df
+
+
 
 
 def NeuralFCA_Algorithm(X_train, Y_train, X_test, Y_test):
@@ -64,6 +69,28 @@ def NeuralFCA_Algorithm(X_train, Y_train, X_test, Y_test):
 
 
 
+def VisualiseFCA_NN(cn):
+    edge_weights = cn.edge_weights_from_network()
+    fig, ax = plt.subplots(figsize=(15,5))
+    vis = LineVizNx(node_label_font_size=14, node_label_func=lambda el_i, P: nl.neuron_label_func(el_i, P, set(cn.attributes))+'\n\n')
+    vis.init_mover_per_poset(cn.poset)
+    vis.draw_poset(
+        cn.poset, ax=ax,
+        flg_node_indices=False,
+        node_label_func=lambda el_i, P: nl.neuron_label_func(el_i, P, set(cn.attributes), only_new_attrs=True)+'\n\n',
+        edge_color=[edge_weights[edge] for edge in cn.poset.to_networkx().edges],
+        edge_cmap=plt.cm.RdBu,
+        )
+    nx.draw_networkx_edge_labels(cn.poset.to_networkx(), vis.mover.pos, {k: f"{v:.1f}" for k,v in edge_weights.items()}, label_pos=0.7)
+    plt.title('Neural network with fitted edge weights', size=24, x=0.05, loc='center')
+    plt.tight_layout()
+    plt.subplots_adjust()
+    #plt.savefig('fitted_network.png')
+    plt.show()
+
+
+
+
 def NeuralFCAClassification(features, processed_df, target):
     try:
         print('Neural FCA classification for:')
@@ -72,7 +99,7 @@ def NeuralFCAClassification(features, processed_df, target):
         X = processed_df.drop(target, axis=1)
         #Binarise data
         X = OneHotEncodeDF(X,6)
-        Y = NumOneHotEncoder(processed_df[target], 6, target)
+        Y = NumOneHotEncoder(processed_df[target],6, target)
         #Covert to bool dataframes
         X.replace({0: False, 1: True}, inplace=True)
         Y.replace({0: False, 1: True}, inplace=True)
@@ -102,7 +129,9 @@ def NeuralFCAClassification(features, processed_df, target):
                     #Transform result to binary format like the testing data
                     col_result.replace({0: False, 1: True}, inplace=True)
                     Y_pred = pd.concat([Y_pred, col_result], axis=1)
-                    #print('Class prediction with probabilities', cn.predict_proba(X_test).detach().numpy())
+                    #print('Accuracy score for this column of the target: {}'.format(accuracy_score(col_result,Y_test.iloc[:,i])))
+                    #Visualise the NN with weights
+                    #VisualiseFCA_NN(cn)
                 accuracy_scores.append(accuracy_score(Y_test, Y_pred))
                 f1_scores.append(f1_score(Y_test, Y_pred, average='micro', zero_division=1))
                 #print('Accuracy score: {}'.format(accuracy_scores[-1]))

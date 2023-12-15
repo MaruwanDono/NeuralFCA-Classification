@@ -15,6 +15,7 @@ def NumOneHotEncoder(df_target, n, target):
         step = abs(max-min)/n
         bin_edges = [min+i*step for i in range(n+1)]
         bin_labels = [r'{}_{}'.format(target, i) for i in range(n)]
+        #bin_labels = [r'{}_{}'.format(target[0:4], i) for i in range(n)]
         categorical_df_target = pd.cut(df_target, bins=bin_edges, labels=bin_labels)
         return pd.get_dummies(categorical_df_target)
     except Exception as e:
