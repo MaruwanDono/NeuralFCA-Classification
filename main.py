@@ -11,6 +11,8 @@ import NeuralFCA
 datasets = ['ds_salaries', 'world_population', 'US_electricity_2017']
 ds_salaries_features = ['job_title', 'experience_level', 'salary_in_usd',\
     'work_year', 'employment_type', 'remote_ratio', 'company_size']
+#ds_salaries_features = ['employment_type', 'experience_level', 'salary_in_usd',\
+#    'company_size']
 world_population_features = ['Country/Territory', 'Rank', 'Continent',\
     'Growth Rate', '2022 Population', '2020 Population', '2015 Population',\
     '2010 Population', '2000 Population', 'Area (km²)','Density (per km²)']

@@ -39,6 +39,7 @@ def NeuralFCA_Algorithm(X_train, Y_train, X_test, Y_test):
         y_preds = np.zeros(K_train.n_objects)
         y_preds[list(c.extent_i)] = 1
         c.measures['f1_score'] = f1_score(Y_train, y_preds, average='micro', zero_division=1)
+        #c.measures['f1_score'] = accuracy_score(Y_train, y_preds)
     best_concepts = list(L.measures['f1_score'].argsort()[::-1][:212])
     assert len({g_i for c in L[best_concepts] for g_i in c.extent_i})==K_train.n_objects, "Selected concepts do not cover all train objects"
     cn = nl.ConceptNetwork.from_lattice(L, best_concepts, sorted(set(Y_train)))
